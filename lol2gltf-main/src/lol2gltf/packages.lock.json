@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0": {
+      "CommandLineParser": {
+        "type": "Direct",
+        "requested": "[2.9.1, )",
+        "resolved": "2.9.1",
+        "contentHash": "OE0sl1/sQ37bjVsPKKtwQlWDgqaxWgtme3xZz7JssWUzg5JpMIyHgCTY9MVMxOg48fJ1AgGT3tgdH5m/kQ5xhA=="
+      },
+      "LeagueToolkit": {
+        "type": "Direct",
+        "requested": "[4.0.0-beta.52, )",
+        "resolved": "4.0.0-beta.52",
+        "contentHash": "tIPNHLr6BtdafXHDPNvmVde7VKyzicaBsADY9IKlDXZsiGYiL7C+1gw3oMc8Bj4Vvbq7zqUXghnVhLd40VuoKQ==",
+        "dependencies": {
+          "CommunityToolkit.Diagnostics": "8.3.2",
+          "CommunityToolkit.HighPerformance": "8.3.2",
+          "FlatSharp.Runtime": "7.7.0",
+          "SharpGLTF.Toolkit": "1.0.3",
+          "SixLabors.ImageSharp": "3.1.5",
+          "System.IO.Hashing": "8.0.0",
+          "ZstdSharp.Port": "0.8.1"
+        }
+      },
+      "LeagueToolkit.IO.Extensions": {
+        "type": "Direct",
+        "requested": "[4.0.0-beta.52, )",
+        "resolved": "4.0.0-beta.52",
+        "contentHash": "lEw1FqD/T2rG6RTIE/NnigehOJ3S1wGl58O54ubuNeIrwyzvL6HwpP4A8tBATAJvJ20T1HFu2bp41+wvXjT6mA==",
+        "dependencies": {
+          "LeagueToolkit": "4.0.0-beta.52",
+          "LeagueToolkit.Meta.Classes": "4.0.0-beta.52",
+          "SharpGLTF.Toolkit": "1.0.3"
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[8.0.22, )",
+        "resolved": "8.0.22",
+        "contentHash": "MhcMithKEiyyNkD2ZfbDZPmcOdi0GheGfg8saEIIEfD/fol3iHmcV8TsZkD4ZYz5gdUuoX4YtlVySUU7Sxl9SQ=="
+      },
+      "SixLabors.ImageSharp": {
+        "type": "Direct",
+        "requested": "[3.1.6, )",
+        "resolved": "3.1.6",
+        "contentHash": "dHQ5jugF9v+5/LCVHCWVzaaIL6WOehqJy6eju/0VFYFPEj2WtqkGPoEV9EVQP83dHsdoqYaTuWpZdwAd37UwfA=="
+      },
+      "CommunityToolkit.Diagnostics": {
+        "type": "Transitive",
+        "resolved": "8.3.2",
+        "contentHash": "YyMsBE9lT0pJg2bEDzlfEWdlk6xHExW6jr1dxC7+YUqqVmOGL5nZROpxbXQRTe5TrfIs7BvkVsGULv/hq6tGIA=="
+      },
+      "CommunityToolkit.HighPerformance": {
+        "type": "Transitive",
+        "resolved": "8.3.2",
+        "contentHash": "1Os81ua0FmIOtiSgOk5C1KBraQ3SDfxs/7BG4qDagm48nGplr//lAVqLH9I2TLDVqRFdhqTUaEITFA5Ho/Ovkw=="
+      },
+      "FlatSharp.Runtime": {
+        "type": "Transitive",
+        "resolved": "7.7.0",
+        "contentHash": "dqaxZ5cAQJB/D1IkZnQ36iuuh50Ld0JEbmKL5EM7Y6fxCaHZ4YFZj8hQH75rqt9zJsxOZ1mMaVpTRbF/U9bZpw==",
+        "dependencies": {
+          "System.Memory": "4.5.5"
+        }
+      },
+      "LeagueToolkit.Meta.Classes": {
+        "type": "Transitive",
+        "resolved": "4.0.0-beta.52",
+        "contentHash": "j3oaI2RNx7wTRRT3JcMKOPZpdpAqsRB6XFKvBclWO2WeDwXgs/f7sejdkvHesjcm/baa1r/3KaFnoWV0n4iA+Q==",
+        "dependencies": {
+          "LeagueToolkit": "4.0.0-beta.52"
+        }
+      },
+      "SharpGLTF.Core": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "su+Flcg2g6GgOIgulRGBDMHA6zY5NBx6NYH1Ayd6iBbSbwspHsN2VQgZfANgJy92cBf7qtpjC0uMiShbO+TEEg=="
+      },
+      "SharpGLTF.Runtime": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "W0bg2WyXlcSAJVu153hNUNm+BU4RP46yLwGD4099hSm8dsXG/H+J95PBoLJbIq8KGVkUWvfM0+XWHoEkCyd50A==",
+        "dependencies": {
+          "SharpGLTF.Core": "1.0.3"
+        }
+      },
+      "SharpGLTF.Toolkit": {
+        "type": "Transitive",
+        "resolved": "1.0.3",
+        "contentHash": "vkEuf8ch76NNgZXU/3zoXTIXRO0o14H3aRoSFzcuUQb0PTxvV6jEfmWkUVO6JtLDuFCIimqZaf3hdxr32ltpfQ==",
+        "dependencies": {
+          "SharpGLTF.Runtime": "1.0.3"
+        }
+      },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "ne1843evDugl0md7Fjzy6QjJrzsjh46ZKbhf8GwBXb5f/gw97J4bxMs0NQKifDuThh/f0bZ0e62NPl1jzTuRqA=="
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.5.5",
+        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
+      },
+      "ZstdSharp.Port": {
+        "type": "Transitive",
+        "resolved": "0.8.1",
+        "contentHash": "19tNz33kn2EkyViFXuxfVn338UJaRmkwBphVqP2dVJIYQUQgFrgG5h061mxkRRg1Ax6r+6WOj1FxaFZ5qaWqqg=="
+      }
+    },
+    "net8.0/win-x64": {}
+  }
+}

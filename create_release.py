@@ -125,6 +125,9 @@ def create_release_package(version: str = None):
     # Copy individual files
     for filename in INCLUDE_FILES:
         src_file = script_dir / filename
+        # Check in docs/ folder if not found in root
+        if not src_file.exists() and filename == "CHANGELOG.md":
+            src_file = script_dir / "docs" / filename
         if src_file.exists():
             dst_file = addon_dir / filename
             shutil.copy2(src_file, dst_file)

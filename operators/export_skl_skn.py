@@ -57,11 +57,8 @@ class LOLLeagueExportSKN_V2(Operator, ExportHelper):
     
     def execute(self, context):
         from ..io.gltf_bridge import export_blender_to_gltf, get_temp_gltf_path
-        from ..io.lemon3d_bridge import convert_fbx_to_skl_skn, check_dependencies
         
-        # Note: We still need FBX→SKN/SKL conversion from lemon3d
-        # For now, we'll export to glTF, then convert glTF→FBX→SKN/SKL
-        # TODO: Implement direct glTF→SKN/SKL conversion
+        # Export to glTF, then convert glTF→SKN/SKL using lol2gltf
         
         # Get selected objects
         armature_obj = None

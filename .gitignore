@@ -37,7 +37,15 @@ tmp/
 # Large external dependencies (should be downloaded separately)
 LeagueToolkit-main/
 SharpGLTF-master/
-lol2gltf-main/
+
+# lol2gltf-main: Include source code (required by GPL v3), but exclude build artifacts
+lol2gltf-main/bin/
+lol2gltf-main/obj/
+lol2gltf-main/publish/
+lol2gltf-main/*.exe
+lol2gltf-main/*.pdb
+lol2gltf-main/src/**/bin/
+lol2gltf-main/src/**/obj/
 
 # lol2gltf.exe is too large for GitHub (>100MB)
 # Users should download from: https://github.com/Crauzer/lol2gltf/releases

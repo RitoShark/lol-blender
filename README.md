@@ -207,7 +207,9 @@ These can be safely deleted when Blender is closed.
 
 ## License
 
-This project is released under the ... License. See [LICENSE](LICENSE) file for details.
+This project is released under the GNU General Public License v3.0 or later. See [LICENSE](LICENSE) file for details.
+
+**Note:** This project is licensed under GPL v3 as required by the copyleft license of the bundled modified lol2gltf. See the [LICENSE](LICENSE) file for full license text and third-party component licenses.
 
 ## Support & Contributing
 

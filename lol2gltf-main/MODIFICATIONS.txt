@@ -1,0 +1,40 @@
+MODIFICATIONS TO lol2gltf
+==========================
+
+This is a modified version of lol2gltf (https://github.com/Crauzer/lol2gltf)
+
+MODIFICATIONS MADE:
+-------------------
+
+1. Added glTF to Static Mesh conversion (gltf2static command)
+   - Converts glTF files to League of Legends SCB/SCO static mesh formats
+   - Implemented in: src/lol2gltf/Program.cs (ConvertGltfToStaticMesh method)
+   - Options class: src/lol2gltf/Options.cs (GltfToStaticMeshOptions)
+
+2. Added glTF to Animation extraction (gltf2anm command)
+   - Extracts animations from glTF files and saves them as ANM files
+   - Implemented in: src/lol2gltf/Program.cs (ConvertGltfToAnimation method)
+   - Options class: src/lol2gltf/Options.cs (GltfToAnimationOptions)
+
+3. Updated command line parser
+   - Added support for new commands in Main method
+   - File: src/lol2gltf/Program.cs
+
+DATE OF MODIFICATIONS: 2025
+
+LICENSE:
+--------
+This modified work is licensed under the GNU General Public License v3.0
+or later, as required by the original license.
+
+The original work is Copyright (C) [Year] Crauzer
+Modifications are Copyright (C) 2025 ritoshark
+
+SOURCE CODE:
+------------
+The complete source code for this modified version is available at:
+https://github.com/ritoshark/lol-blender (or your repository URL)
+
+Original source code available at:
+https://github.com/Crauzer/lol2gltf
+
