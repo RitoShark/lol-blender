@@ -16,7 +16,7 @@ A comprehensive Blender addon for importing and exporting League of Legends game
 ✅ Import League of Legends character models with proper rigging  
 ✅ Export custom models back to game format  
 ✅ Import and export animations  
-✅ Automatic bone weight limiting (max 4 influences per vertex)  
+✅ Automatic bone weight limiting (max 4 influences per vertex)  (NEEDS TESTING NOT TESTED)
 ✅ UV corner snapping tools for texture alignment  
 ✅ Drag-and-drop file support  
 ✅ Preserves bind matrices and skeleton hierarchy  
