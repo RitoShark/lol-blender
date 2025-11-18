@@ -289,10 +289,38 @@ class Program
         foreach (var (name, animation) in animations)
         {
             Console.WriteLine($"[ANM Export] ========================================");
-            Console.WriteLine($"[ANM Export] Exporting animation: {name}");
+            Console.WriteLine($"[ANM Export] Exporting animation: {name ?? "Unnamed"}");
             Console.WriteLine($"[ANM Export] ========================================");
             
-            string anmPath = Path.Combine(options.OutputPath, $"{name}.anm");
+            // Sanitize animation name for Windows filename compatibility
+            // Replace invalid characters: | : ? * " < > / \
+            string animationName = name ?? "Unnamed";
+            string sanitizedName = animationName;
+            
+            // Get invalid characters and sanitize
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            if (invalidChars != null)
+            {
+                foreach (char c in invalidChars)
+                {
+                    sanitizedName = sanitizedName.Replace(c, '_');
+                }
+            }
+            // Also replace spaces with underscores for consistency
+            sanitizedName = sanitizedName.Replace(' ', '_');
+            
+            // Ensure sanitized name is not empty
+            if (string.IsNullOrWhiteSpace(sanitizedName))
+            {
+                sanitizedName = "Unnamed";
+            }
+            
+            string anmPath = Path.Combine(options.OutputPath, $"{sanitizedName}.anm");
+            
+            if (sanitizedName != animationName)
+            {
+                Console.WriteLine($"[ANM Export] Sanitized animation name: '{animationName}' -> '{sanitizedName}'");
+            }
             
             // Try to use reflection to call Write method on the animation object
             var writeMethod = animation.GetType().GetMethod("Write", new[] { typeof(Stream) });
@@ -309,10 +337,10 @@ class Program
                 // and loading it back, so we need to extract the data and write it again
                 // For now, we'll write it directly from the glTF data
                 Console.WriteLine($"[ANM Export] Writing directly from glTF data (no Write method available)");
-                WriteAnimationDirectlyFromGltf(gltf, name, anmPath, skeleton);
+                WriteAnimationDirectlyFromGltf(gltf, animationName, anmPath, skeleton);
             }
             
-            Console.WriteLine($"[ANM Export] ✓ Exported: {name}.anm");
+            Console.WriteLine($"[ANM Export] ✓ Exported: {sanitizedName}.anm");
             count++;
         }
 
