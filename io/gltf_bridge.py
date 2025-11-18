@@ -471,18 +471,6 @@ def import_gltf_to_blender(gltf_path: str, context: bpy.types.Context, scale_fac
             skinned_mesh_obj.name = model_name
             print(f"[lol_league_v4] Renamed skinned_mesh to '{model_name}'")
         
-        # Scale the skinned_mesh parent object by 0.1x (10x smaller)
-        # This scales everything (armature and mesh children) together
-        if skinned_mesh_obj:
-            skinned_mesh_obj.scale = (0.1, 0.1, 0.1)
-            print(f"[lol_league_v4] Scaled skinned_mesh '{skinned_mesh_obj.name}' by 0.1x (10x smaller)")
-        elif armature_obj:
-            # Fallback: if no parent found, scale armature (mesh should be parented to it)
-            armature_obj.scale = (0.1, 0.1, 0.1)
-            print("[lol_league_v4] Scaled armature by 0.1x (10x smaller) - no parent object found")
-        
-        # Scale is already applied during glTF creation, so no need to scale again
-        # But we can verify the scale is correct
         print(f"[lol_league_v4] Imported glTF (scale factor {scale_factor} applied during conversion)")
         
         return armature_obj, mesh_obj
@@ -492,6 +480,69 @@ def import_gltf_to_blender(gltf_path: str, context: bpy.types.Context, scale_fac
         import traceback
         traceback.print_exc()
         return None, None
+
+def sanitize_maya_name(name: str) -> str:
+    """
+    Sanitize a name to be Maya-compatible.
+    Maya object names cannot contain spaces or certain special characters.
+    
+    Args:
+        name: Original name
+        
+    Returns:
+        Sanitized name safe for Maya
+    """
+    # Replace spaces with underscores
+    sanitized = name.replace(' ', '_')
+    # Remove or replace other invalid characters
+    # Maya doesn't allow: | : ? * " < >
+    invalid_chars = ['|', ':', '?', '*', '"', '<', '>', '/', '\\']
+    for char in invalid_chars:
+        sanitized = sanitized.replace(char, '_')
+    # Remove leading/trailing underscores
+    sanitized = sanitized.strip('_')
+    # Ensure it's not empty
+    if not sanitized:
+        sanitized = "default"
+    return sanitized
+
+def check_maya_name_validity(name: str) -> tuple[bool, list[str]]:
+    """
+    Check if a name is valid for Maya.
+    Maya object names cannot contain spaces or certain special characters.
+    Also checks for non-ASCII characters (like ç, é, etc.)
+    
+    Args:
+        name: Name to check
+        
+    Returns:
+        (is_valid: bool, invalid_chars: list of invalid characters found)
+    """
+    invalid_chars = []
+    
+    # Check for spaces
+    if ' ' in name:
+        invalid_chars.append('space')
+    
+    # Check for invalid special characters
+    maya_invalid = ['|', ':', '?', '*', '"', '<', '>', '/', '\\']
+    for char in maya_invalid:
+        if char in name:
+            invalid_chars.append(char)
+    
+    # Check for non-ASCII characters (like ç, é, ñ, etc.)
+    try:
+        name.encode('ascii')
+    except UnicodeEncodeError:
+        # Find non-ASCII characters
+        for char in name:
+            try:
+                char.encode('ascii')
+            except UnicodeEncodeError:
+                if char not in invalid_chars:
+                    invalid_chars.append(char)
+    
+    return len(invalid_chars) == 0, invalid_chars
 
 def export_blender_to_gltf(armature_obj: bpy.types.Object, mesh_obj: bpy.types.Object, 
                           gltf_path: str, export_animations: bool = False) -> bool:
@@ -528,42 +579,196 @@ def export_blender_to_gltf(armature_obj: bpy.types.Object, mesh_obj: bpy.types.O
                 
                 bpy.ops.object.mode_set(mode='OBJECT')
         
+        # Apply armature object's transform (location, rotation, scale) to bones before export
+        # This ensures the bones are in the correct position/orientation for export
+        # (glTF exporter doesn't apply armature object transforms to bones)
+        armature_transform_applied = False
+        if armature_obj and armature_obj.type == 'ARMATURE':
+            # Check if armature has non-identity transform
+            location_applied = False
+            rotation_applied = False
+            scale_applied = False
+            
+            # Check location
+            loc = armature_obj.location
+            if abs(loc.x) > 0.0001 or abs(loc.y) > 0.0001 or abs(loc.z) > 0.0001:
+                location_applied = True
+            
+            # Check rotation (using Euler angles)
+            rot_euler = armature_obj.rotation_euler
+            if abs(rot_euler.x) > 0.0001 or abs(rot_euler.y) > 0.0001 or abs(rot_euler.z) > 0.0001:
+                rotation_applied = True
+            
+            # Check scale
+            scale = armature_obj.scale
+            if abs(scale.x - 1.0) > 0.0001 or abs(scale.y - 1.0) > 0.0001 or abs(scale.z - 1.0) > 0.0001:
+                scale_applied = True
+            
+            if location_applied or rotation_applied or scale_applied:
+                # Apply all transforms to bake them into bone positions/orientations
+                bpy.context.view_layer.objects.active = armature_obj
+                bpy.ops.object.select_all(action='DESELECT')
+                armature_obj.select_set(True)
+                
+                # Store original values for logging
+                original_loc = loc.copy()
+                original_rot = rot_euler.copy()
+                original_scale = scale.copy()
+                
+                # Apply all transforms at once
+                bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+                
+                print(f"[lol_league_v4] Applied armature transform:")
+                if location_applied:
+                    print(f"  Location: {original_loc} -> (0, 0, 0)")
+                if rotation_applied:
+                    print(f"  Rotation: {original_rot} -> (0, 0, 0)")
+                if scale_applied:
+                    print(f"  Scale: {original_scale} -> (1, 1, 1)")
+                
+                armature_transform_applied = True
+        
+        # Check material names for Maya compatibility
+        invalid_materials = []
+        if mesh_obj and mesh_obj.data and mesh_obj.data.materials:
+            for mat in mesh_obj.data.materials:
+                if mat and mat.name:
+                    is_valid, invalid_chars = check_maya_name_validity(mat.name)
+                    if not is_valid:
+                        invalid_materials.append((mat.name, invalid_chars))
+        
+        # Check bone names for Maya compatibility
+        invalid_bones = []
+        if armature_obj and armature_obj.type == 'ARMATURE':
+            for bone in armature_obj.data.bones:
+                if bone.name:
+                    is_valid, invalid_chars = check_maya_name_validity(bone.name)
+                    if not is_valid:
+                        invalid_bones.append((bone.name, invalid_chars))
+        
+        # Report errors if any invalid names found
+        if invalid_materials or invalid_bones:
+            error_msg = "Cannot export: Found names with invalid characters for Maya:\n\n"
+            if invalid_materials:
+                error_msg += "Materials:\n"
+                for mat_name, invalid_chars in invalid_materials:
+                    chars_str = ', '.join([f"'{c}'" if c != 'space' else "' ' (space)" for c in invalid_chars])
+                    error_msg += f"  - '{mat_name}' (invalid characters: {chars_str})\n"
+            if invalid_bones:
+                error_msg += "\nBones:\n"
+                for bone_name, invalid_chars in invalid_bones:
+                    chars_str = ', '.join([f"'{c}'" if c != 'space' else "' ' (space)" for c in invalid_chars])
+                    error_msg += f"  - '{bone_name}' (invalid characters: {chars_str})\n"
+            error_msg += "\nPlease rename these to use only ASCII letters, numbers, and underscores."
+            
+            # Print full error to Blender console
+            print(f"[lol_league_v4] ERROR: {error_msg}")
+            # Also print each line separately for better visibility in console
+            for line in error_msg.split('\n'):
+                if line.strip():
+                    print(f"[lol_league_v4] {line}")
+            
+            raise ValueError(error_msg)
+        
+        # Sanitize material names for Maya compatibility (spaces -> underscores, etc.)
+        # Store original names and temporarily rename materials
+        material_renames = {}
+        if mesh_obj and mesh_obj.data and mesh_obj.data.materials:
+            for mat in mesh_obj.data.materials:
+                if mat and mat.name:
+                    sanitized_name = sanitize_maya_name(mat.name)
+                    if sanitized_name != mat.name:
+                        # Store original name
+                        material_renames[mat] = mat.name
+                        # Temporarily rename for export
+                        mat.name = sanitized_name
+                        print(f"[lol_league_v4] Sanitized material name: '{material_renames[mat]}' -> '{sanitized_name}'")
+        
+        # Sanitize bone names for Maya compatibility
+        # Store original names and temporarily rename bones
+        bone_renames = {}
+        if armature_obj and armature_obj.type == 'ARMATURE':
+            # Switch to Edit Mode to rename bones
+            current_mode = bpy.context.mode
+            if current_mode != 'EDIT_ARMATURE':
+                bpy.context.view_layer.objects.active = armature_obj
+                bpy.ops.object.mode_set(mode='EDIT')
+            
+            for bone in armature_obj.data.edit_bones:
+                if bone.name:
+                    original_name = bone.name
+                    sanitized_name = sanitize_maya_name(original_name)
+                    if sanitized_name != original_name:
+                        # Store original name before renaming
+                        bone_renames[original_name] = sanitized_name
+                        # Temporarily rename for export
+                        bone.name = sanitized_name
+                        print(f"[lol_league_v4] Sanitized bone name: '{original_name}' -> '{sanitized_name}'")
+            
+            # Switch back to Object Mode
+            bpy.ops.object.mode_set(mode='OBJECT')
+        
         # Select objects
         bpy.ops.object.select_all(action='DESELECT')
         armature_obj.select_set(True)
         if mesh_obj:
             mesh_obj.select_set(True)
         
-        # Export glTF
-        # Note: Operator parameters use 'export_' prefix, not 'gltf_'
-        export_settings = {
-            'filepath': gltf_path,
-            'use_selection': True,
-            'export_format': 'GLB',  # Binary format
-            'export_animations': export_animations,
-            'export_cameras': False,
-            'export_lights': False,
-            'export_extras': True,
-            'export_yup': True,  # glTF uses Y-up
-            'export_apply': True,  # Apply modifiers
-            'export_skins': True,
-            'export_morph': False,
-        }
-        
-        # Add animation-specific settings if exporting animations
-        if export_animations:
-            export_settings['export_frame_range'] = True
-            export_settings['export_force_sampling'] = True
-            export_settings['export_animation_mode'] = 'ACTIONS'
-            export_settings['export_nla_strips'] = False
-            export_settings['export_def_bones'] = False
-            # Note: export_optimize_animation_size might not exist in all Blender versions
-            # Only add it if it's a valid parameter
-        
-        bpy.ops.export_scene.gltf(**export_settings)
-        
-        print(f"[lol_league_v4] Exported glTF: {gltf_path} (animations: {export_animations})")
-        return True
+        try:
+            # Export glTF
+            # Note: Operator parameters use 'export_' prefix, not 'gltf_'
+            export_settings = {
+                'filepath': gltf_path,
+                'use_selection': True,
+                'export_format': 'GLB',  # Binary format
+                'export_animations': export_animations,
+                'export_cameras': False,
+                'export_lights': False,
+                'export_extras': True,
+                'export_yup': True,  # glTF uses Y-up
+                'export_apply': True,  # Apply modifiers
+                'export_skins': True,
+                'export_morph': False,
+            }
+            
+            # Add animation-specific settings if exporting animations
+            if export_animations:
+                export_settings['export_frame_range'] = True
+                export_settings['export_force_sampling'] = True
+                export_settings['export_animation_mode'] = 'ACTIONS'
+                export_settings['export_nla_strips'] = False
+                export_settings['export_def_bones'] = False
+                # Note: export_optimize_animation_size might not exist in all Blender versions
+                # Only add it if it's a valid parameter
+            
+            bpy.ops.export_scene.gltf(**export_settings)
+            
+            print(f"[lol_league_v4] Exported glTF: {gltf_path} (animations: {export_animations})")
+            return True
+        finally:
+            # Restore original material names
+            for mat, original_name in material_renames.items():
+                if mat and mat.name:
+                    mat.name = original_name
+                    print(f"[lol_league_v4] Restored material name: '{mat.name}' -> '{original_name}'")
+            
+            # Restore original bone names
+            if bone_renames and armature_obj and armature_obj.type == 'ARMATURE':
+                current_mode = bpy.context.mode
+                if current_mode != 'EDIT_ARMATURE':
+                    bpy.context.view_layer.objects.active = armature_obj
+                    bpy.ops.object.mode_set(mode='EDIT')
+                
+                # Restore bone names (create reverse mapping: sanitized -> original)
+                sanitized_to_original = {sanitized: original for original, sanitized in bone_renames.items()}
+                for bone in armature_obj.data.edit_bones:
+                    if bone.name in sanitized_to_original:
+                        original_name = sanitized_to_original[bone.name]
+                        sanitized_name = bone.name  # Store before changing
+                        bone.name = original_name
+                        print(f"[lol_league_v4] Restored bone name: '{sanitized_name}' -> '{original_name}'")
+                
+                bpy.ops.object.mode_set(mode='OBJECT')
         
     except Exception as e:
         print(f"[lol_league_v4] ERROR: Failed to export glTF: {e}")

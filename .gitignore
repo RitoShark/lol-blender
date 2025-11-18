@@ -37,6 +37,8 @@ tmp/
 # Large external dependencies (should be downloaded separately)
 LeagueToolkit-main/
 SharpGLTF-master/
+lol_maya_4.2.8/
+blender-blender-v4.2-release/
 
 # lol2gltf-main: Include source code (required by GPL v3), but exclude build artifacts
 lol2gltf-main/bin/

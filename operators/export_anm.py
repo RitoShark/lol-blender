@@ -88,26 +88,6 @@ class LOLLeagueExportANM_V4(Operator, ExportHelper):
         scale_factor = armature_obj.get('lol_scale_factor', 0.01)
         skl_path = armature_obj.get('lol_skl_path', '')
         
-        # Find skinned_mesh parent object and scale it up 10x for export
-        # This reverses the 0.1x scale applied on import (lol2gltf imports 10x too big, so we scale down 10x on import)
-        # On export, we need to scale back up 10x so lol2gltf processes it correctly
-        skinned_mesh_obj = None
-        original_scale = None
-        if armature_obj.parent:
-            skinned_mesh_obj = armature_obj.parent
-        elif mesh_obj.parent:
-            skinned_mesh_obj = mesh_obj.parent
-        
-        if skinned_mesh_obj:
-            original_scale = skinned_mesh_obj.scale.copy()
-            # Scale up by 10x to reverse the import scaling
-            skinned_mesh_obj.scale = (
-                original_scale.x * 10.0,
-                original_scale.y * 10.0,
-                original_scale.z * 10.0
-            )
-            print(f"[lol_league_v4] Scaled skinned_mesh '{skinned_mesh_obj.name}' from {original_scale} to {skinned_mesh_obj.scale} for export (reversing import scale)")
-        
         # Determine output directory and filename
         output_dir = os.path.dirname(self.filepath)
         base_name = os.path.splitext(os.path.basename(self.filepath))[0]
@@ -254,11 +234,6 @@ class LOLLeagueExportANM_V4(Operator, ExportHelper):
             traceback.print_exc()
             self.report({'ERROR'}, error_msg)
             return {'CANCELLED'}
-        finally:
-            # Restore original scale
-            if skinned_mesh_obj and original_scale:
-                skinned_mesh_obj.scale = original_scale
-                print(f"[lol_league_v4] Restored skinned_mesh '{skinned_mesh_obj.name}' scale to {original_scale}")
 
 
 def menu_func_export(self, context):

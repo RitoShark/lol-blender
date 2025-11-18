@@ -77,13 +77,28 @@ class LOLLeagueExportSKN_V2(Operator, ExportHelper):
                 armature_obj = obj
             elif obj.type == 'MESH':
                 mesh_obj = obj
+                # If mesh is selected but armature not found yet, check mesh's parent
+                if not armature_obj and mesh_obj.parent and mesh_obj.parent.type == 'ARMATURE':
+                    armature_obj = mesh_obj.parent
+        
+        # If mesh found but no armature, try to find from mesh's parent or modifier
+        if mesh_obj and not armature_obj:
+            # Check parent first
+            if mesh_obj.parent and mesh_obj.parent.type == 'ARMATURE':
+                armature_obj = mesh_obj.parent
+            else:
+                # Check Armature modifier
+                for mod in mesh_obj.modifiers:
+                    if mod.type == 'ARMATURE' and mod.object and mod.object.type == 'ARMATURE':
+                        armature_obj = mod.object
+                        break
         
         if not mesh_obj:
             self.report({'ERROR'}, "Select a mesh object to export")
             return {'CANCELLED'}
         
         if not armature_obj:
-            self.report({'ERROR'}, "No armature found. Cannot export SKL without skeleton.")
+            self.report({'ERROR'}, "No armature found. Cannot export SKL without skeleton. Make sure the mesh has an Armature modifier or is parented to an armature.")
             return {'CANCELLED'}
         
         # Check joint limit (max 256 joints, same as Maya exporter)
@@ -140,56 +155,46 @@ class LOLLeagueExportSKN_V2(Operator, ExportHelper):
             # Get scale factor from metadata
             scale_factor = armature_obj.get('lol_scale_factor', self.scale_factor)
         
-        # Find skinned_mesh parent object and scale it up 10x for export
-        # This reverses the 0.1x scale applied on import (lol2gltf imports 10x too big, so we scale down 10x on import)
-        # On export, we need to scale back up 10x so lol2gltf processes it correctly
-        skinned_mesh_obj = None
-        original_scale = None
-        if armature_obj.parent:
-            skinned_mesh_obj = armature_obj.parent
-        elif mesh_obj.parent:
-            skinned_mesh_obj = mesh_obj.parent
-        
-        if skinned_mesh_obj:
-            original_scale = skinned_mesh_obj.scale.copy()
-            # Scale up by 10x to reverse the import scaling
-            skinned_mesh_obj.scale = (
-                original_scale.x * 10.0,
-                original_scale.y * 10.0,
-                original_scale.z * 10.0
-            )
-            print(f"[lol_league_v4] Scaled skinned_mesh '{skinned_mesh_obj.name}' from {original_scale} to {skinned_mesh_obj.scale} for export (reversing import scale)")
+        # Always export from Blender as fallback (cached might be malformed)
+        # For now, let's always export from Blender to ensure it's correct
+        self.report({'INFO'}, "Exporting to glTF...")
+        temp_gltf = get_temp_gltf_path(f"{base_name}_export")
+        temp_gltf = os.path.splitext(temp_gltf)[0] + ".glb"  # Use binary format
         
         try:
-            # Always export from Blender as fallback (cached might be malformed)
-            # For now, let's always export from Blender to ensure it's correct
-            self.report({'INFO'}, "Exporting to glTF...")
-            temp_gltf = get_temp_gltf_path(f"{base_name}_export")
-            temp_gltf = os.path.splitext(temp_gltf)[0] + ".glb"  # Use binary format
-            
             success = export_blender_to_gltf(armature_obj, mesh_obj, temp_gltf)
             if not success:
                 self.report({'ERROR'}, "Failed to export to glTF. Check console for details.")
                 return {'CANCELLED'}
+        except ValueError as e:
+            # Name validation error - show detailed message
+            error_msg = str(e)
+            # Show first line as main error in popup
+            first_line = error_msg.split('\n')[0] if '\n' in error_msg else error_msg
+            self.report({'ERROR'}, first_line)
             
-            # Step 2: Convert glTF to SKN/SKL using lol2gltf
-            self.report({'INFO'}, "Converting glTF to SKN/SKL using lol2gltf...")
-            from ..io.gltf_bridge import convert_gltf_to_skl_skn_with_lol2gltf
+            # Report full error message to Info Log (replace newlines with spaces for single-line report)
+            # The Info Log will show this as the operator's error report
+            error_msg_single_line = error_msg.replace('\n', ' | ')
+            self.report({'ERROR'}, error_msg_single_line)
             
-            success, error_msg = convert_gltf_to_skl_skn_with_lol2gltf(temp_gltf, skn_path, skl_path)
-            if not success:
-                self.report({'ERROR'}, f"Failed to convert glTF to SKN/SKL: {error_msg}")
-                print(f"[lol_league_v4] ERROR: {error_msg}")
-                return {'CANCELLED'}
-            
-            self.report({'INFO'}, f"Exported SKN: {os.path.basename(skn_path)}")
-            self.report({'INFO'}, f"Exported SKL: {os.path.basename(skl_path)}")
-            return {'FINISHED'}
-        finally:
-            # Restore original scale
-            if skinned_mesh_obj and original_scale:
-                skinned_mesh_obj.scale = original_scale
-                print(f"[lol_league_v4] Restored skinned_mesh '{skinned_mesh_obj.name}' scale to {original_scale}")
+            # Also print to console with full formatting
+            print(f"[lol_league_v4] Full error details:\n{error_msg}")
+            return {'CANCELLED'}
+        
+        # Step 2: Convert glTF to SKN/SKL using lol2gltf
+        self.report({'INFO'}, "Converting glTF to SKN/SKL using lol2gltf...")
+        from ..io.gltf_bridge import convert_gltf_to_skl_skn_with_lol2gltf
+        
+        success, error_msg = convert_gltf_to_skl_skn_with_lol2gltf(temp_gltf, skn_path, skl_path)
+        if not success:
+            self.report({'ERROR'}, f"Failed to convert glTF to SKN/SKL: {error_msg}")
+            print(f"[lol_league_v4] ERROR: {error_msg}")
+            return {'CANCELLED'}
+        
+        self.report({'INFO'}, f"Exported SKN: {os.path.basename(skn_path)}")
+        self.report({'INFO'}, f"Exported SKL: {os.path.basename(skl_path)}")
+        return {'FINISHED'}
 
 def register():
     bpy.utils.register_class(LOLLeagueExportSKN_V2)
