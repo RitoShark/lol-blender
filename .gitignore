@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.Python
+
+# Blender
+*.blend1
+*.blend2
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs.txt
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# Large external dependencies (should be downloaded separately)
+LeagueToolkit-main/
+SharpGLTF-master/
+lol2gltf-main/
+
+# lol2gltf.exe is too large for GitHub (>100MB)
+# Users should download from: https://github.com/Crauzer/lol2gltf/releases
+lol2gltf.exe
+
+# Test files
+test/
+tests/
+
+# Development scripts (users don't need these)
+package_v4.py
+install_pygltflib.py
+
+# Build artifacts
+build/
+*.zip
+docs/

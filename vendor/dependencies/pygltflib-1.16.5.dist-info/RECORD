@@ -1,0 +1,13 @@
+pygltflib-1.16.5.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+pygltflib-1.16.5.dist-info/METADATA,sha256=6Gfngf9Mr5bZ6n_g-mF2TUWiL_sYfntd08zBq99NdKM,33453
+pygltflib-1.16.5.dist-info/RECORD,,
+pygltflib-1.16.5.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+pygltflib-1.16.5.dist-info/WHEEL,sha256=_zCd3N1l69ArxyTb8rzEoP9TpbYXkqRFSNOD5OuxnTs,91
+pygltflib-1.16.5.dist-info/licenses/LICENSE,sha256=2FWcyFTpVu4-E0dWqTuknC_owsnllg15juL9xLjTOrw,1055
+pygltflib-1.16.5.dist-info/top_level.txt,sha256=T46SjGImkTApJLy2budrl3jWfHJeO45yzuR-WLjmRk8,10
+pygltflib/__init__.py,sha256=Hx4ilt8DQCpiOWkPR_rASkoIunZEZLIU2t-WbRF9OzQ,43988
+pygltflib/__pycache__/__init__.cpython-313.pyc,,
+pygltflib/__pycache__/utils.cpython-313.pyc,,
+pygltflib/__pycache__/validator.cpython-313.pyc,,
+pygltflib/utils.py,sha256=YbgEC3P5lAFbsCWgXMP7w-eKW9gxtd7LYrkNPsbr_HI,12186
+pygltflib/validator.py,sha256=5EAS686Hx-yDrBMB_zx5Rp4Qgr556G1zZQjT7dLjeG4,5348
