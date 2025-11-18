@@ -66,6 +66,13 @@ class LOLLeagueImportANM_V2(Operator, ImportHelper):
         old_armature_obj = armature_obj
         old_mesh_obj = mesh_obj
         
+        # Find and store the original skinned_mesh name (parent of armature or mesh)
+        old_skinned_mesh_name = None
+        if old_armature_obj and old_armature_obj.parent:
+            old_skinned_mesh_name = old_armature_obj.parent.name
+        elif old_mesh_obj and old_mesh_obj.parent:
+            old_skinned_mesh_name = old_mesh_obj.parent.name
+        
         # Get scale factor and metadata from old armature BEFORE deleting it
         scale_factor = old_armature_obj.get('lol_scale_factor', self.scale_factor)
         old_skl_path = old_armature_obj.get('lol_skl_path', '')
@@ -103,6 +110,11 @@ class LOLLeagueImportANM_V2(Operator, ImportHelper):
             old_armature_data = old_armature_obj.data if old_armature_obj else None
             old_mesh_data = old_mesh_obj.data if old_mesh_obj else None
             
+            # Get materials from old mesh before deleting (to prevent .001 suffixes)
+            old_materials = []
+            if old_mesh_obj and old_mesh_obj.data and old_mesh_obj.data.materials:
+                old_materials = [mat for mat in old_mesh_obj.data.materials if mat]
+            
             # Delete objects first
             bpy.data.objects.remove(old_armature_obj, do_unlink=True)
             if old_mesh_obj:
@@ -114,7 +126,24 @@ class LOLLeagueImportANM_V2(Operator, ImportHelper):
             if old_mesh_data and old_mesh_data.name in bpy.data.meshes:
                 bpy.data.meshes.remove(old_mesh_data, do_unlink=True)
             
-            print(f"[lol_league_v4] Step 3: SUCCESS - Old objects and data blocks deleted")
+            # Delete materials to prevent .001 suffixes on re-import
+            for mat in old_materials:
+                if mat and mat.name in bpy.data.materials:
+                    # Store material name before deletion (can't access after removal)
+                    mat_name = mat.name
+                    # Check if material is used by other objects
+                    is_used = False
+                    for obj in bpy.data.objects:
+                        if obj.type == 'MESH' and obj.data and obj.data.materials:
+                            if mat in obj.data.materials:
+                                is_used = True
+                                break
+                    # Only delete if not used elsewhere
+                    if not is_used:
+                        bpy.data.materials.remove(mat, do_unlink=True)
+                        print(f"[lol_league_v4] Deleted material: {mat_name}")
+            
+            print(f"[lol_league_v4] Step 3: SUCCESS - Old objects, data blocks, and materials deleted")
             
             # Step 4: Create glTF with SKL+SKN+ANM using lol2gltf
             self.report({'INFO'}, "Step 4: Creating glTF with animation using lol2gltf...")
@@ -152,6 +181,18 @@ class LOLLeagueImportANM_V2(Operator, ImportHelper):
                 return {'CANCELLED'}
             
             print(f"[lol_league_v4] Step 5: SUCCESS - Imported armature and mesh with animation")
+            
+            # Find the new skinned_mesh object (parent of armature or mesh)
+            new_skinned_mesh_obj = None
+            if new_armature and new_armature.parent:
+                new_skinned_mesh_obj = new_armature.parent
+            elif new_mesh and new_mesh.parent:
+                new_skinned_mesh_obj = new_mesh.parent
+            
+            # Restore the original skinned_mesh name if we had one
+            if new_skinned_mesh_obj and old_skinned_mesh_name:
+                new_skinned_mesh_obj.name = old_skinned_mesh_name
+                print(f"[lol_league_v4] Restored skinned_mesh name to: {old_skinned_mesh_name}")
             
             # Store metadata (using values we saved before deleting old objects)
             if new_armature:
