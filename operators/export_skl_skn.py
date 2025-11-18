@@ -92,6 +92,12 @@ class LOLLeagueExportSKN_V2(Operator, ExportHelper):
             self.report({'ERROR'}, f"Too many bones found: {bone_count}, max allowed: 256 bones. Please reduce the number of bones in your armature.")
             return {'CANCELLED'}
         
+        # Check vertex count limit (max 65535 vertices, SKN format uses ushort for indices)
+        vertex_count = len(mesh_obj.data.vertices)
+        if vertex_count > 65535:
+            self.report({'ERROR'}, f"Too many vertices found: {vertex_count}, max allowed: 65535 vertices. Please reduce the vertex count (decimate, split mesh, etc.).")
+            return {'CANCELLED'}
+        
         # Check vertex influences (max 4 per vertex, same as Maya exporter)
         invalid_vertices = []
         for vertex in mesh_obj.data.vertices:
