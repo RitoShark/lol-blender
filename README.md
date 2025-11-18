@@ -50,6 +50,17 @@ After enabling the addon, you should see:
 - **File → Export** menu contains LoL export options
 - **3D Viewport sidebar** (press `N`) has a "LoL Tools" tab
 
+### Step 4: Optional - Download lol2gltf (Recommended)
+
+For best import quality, download the lol2gltf converter:
+
+1. Go to https://github.com/Crauzer/lol2gltf/releases
+2. Download `lol2gltf.exe`
+3. Place it in Blender's addon folder: `%APPDATA%\Blender Foundation\Blender\[version]\scripts\addons\lol_blender\lol2gltf-main\`
+4. Restart Blender
+
+**Note:** The addon works without lol2gltf using a fallback method, but lol2gltf provides more reliable conversions.
+
 ## Usage
 
 ### Importing Character Models (SKL + SKN)
