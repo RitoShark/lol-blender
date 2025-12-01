@@ -1,6 +1,12 @@
 # LoL Blender - Blender Addon
 
-A comprehensive Blender addon for importing and exporting League of Legends game files. Supports character models, skeletons, animations, and static objects.
+A comprehensive Blender addon based on lol2gltf for importing and exporting League of Legends game files. Supports character models, skeletons, animations, and static objects.
+
+## Credits
+
+- **pyritofile** - For League of Legends file format support
+- **lol2gltf** by Crauzer - For reliable SKL/SKN conversion
+- **LoL Blender Contributors** - For development and testing
 
 ## Features
 
@@ -49,17 +55,6 @@ After enabling the addon, you should see:
 - **File → Import** menu contains LoL import options
 - **File → Export** menu contains LoL export options
 - **3D Viewport sidebar** (press `N`) has a "LoL Tools" tab
-
-### Step 4: Optional - Download lol2gltf (Recommended)
-
-For best import quality, download the lol2gltf converter:
-
-1. Go to https://github.com/Crauzer/lol2gltf/releases
-2. Download `lol2gltf.exe`
-3. Place it in Blender's addon folder: `%APPDATA%\Blender Foundation\Blender\[version]\scripts\addons\lol_blender\lol2gltf-main\`
-4. Restart Blender
-
-**Note:** The addon works without lol2gltf using a fallback method, but lol2gltf provides more reliable conversions.
 
 ## Usage
 
@@ -135,15 +130,6 @@ League of Legends requires maximum 4 bone influences per vertex. Before exportin
 LoL animations typically use 30 FPS. Make sure your Blender scene is set to 30 FPS before exporting animations:
 - Go to `Output Properties` → `Frame Rate` → Set to 30 FPS
 
-### File Organization
-
-Keep `.skl` and `.skn` files in the same folder with matching names:
-```
-champion_base.skl
-champion_base.skn
-champion_run.anm
-champion_attack.anm
-```
 
 ## Troubleshooting
 
@@ -164,15 +150,6 @@ champion_attack.anm
 1. Make sure you imported the SKL+SKN first
 2. Check that bone names match between model and animation
 3. Verify frame rate is set to 30 FPS
-
-### "lol2gltf.exe not found" warning
-
-**Effect:** Import still works using fallback method, but may be slower.
-
-**To fix (optional):**
-1. Download lol2gltf from: https://github.com/Crauzer/lol2gltf/releases
-2. Place `lol2gltf.exe` in the addon's `lol2gltf-main` folder
-3. Restart Blender
 
 ## Technical Details
 
@@ -199,11 +176,6 @@ The addon stores temporary files in:
 
 These can be safely deleted when Blender is closed.
 
-## Credits
-
-- **pyritofile** - For League of Legends file format support
-- **lol2gltf** by Crauzer - For reliable SKL/SKN conversion
-- **LoL Blender Contributors** - For development and testing
 
 ## License
 
